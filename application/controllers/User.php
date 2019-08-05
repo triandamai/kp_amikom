@@ -93,7 +93,17 @@ class User extends REST_Controller {
             "password"  => md5($password),
             "kategori"  => $kategori
         );
-
+        //cek sudah ada email ?
+        $cek_email = $this->db->where('email',$email);
+        $cek_email = $this->db->get('tb_user')->num_rows();
+        if($cek_email >0){
+            $this->response([
+                'success' => false,
+                'message' => 'Email Sudah ada',
+                'data'    => '404'
+            ], 200);
+        }else{  
+            
         //kemudian data disimpan
         $simpan = $this->db->insert("tb_user",$data);
         //jika berhasil
@@ -101,7 +111,7 @@ class User extends REST_Controller {
             //data diambil kembali untuk menyimpan ke tb_hak_akses
             $this->db->where($data);
             $getdata = $this->db->get("tb_user")->row();
-
+            
             if(isset($getdata)){
                 //data yang akan disimpan ke hak_akses
                 $data_akses = array(
@@ -121,8 +131,8 @@ class User extends REST_Controller {
                 //jika gagal
                 }else{
                     $this->response([
-                        'success' => true,
-                        'message' => 'Data Berhasil Dikirim',
+                        'success' => false,
+                        'message' => 'Berhasil Menyimpan User gagal menyimpan hak_akses',
                         'data'    => '404'
                     ], 200);
                 }
@@ -131,10 +141,12 @@ class User extends REST_Controller {
         } else {
             $this->response([
                 'success' => false,
-                'message' => 'Data Gagal Dikirim',
+                'message' => 'Gagal Menyimpan User',
                 'data'    => '404'
             ], 200);
         }
+        }
+
     }
     public function index_put()
     {

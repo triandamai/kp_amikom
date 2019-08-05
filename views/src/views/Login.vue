@@ -122,10 +122,10 @@ export default {
           if (result.data.success) {
             localStorage.setItem("user", JSON.stringify(result.data.data));
             localStorage.setItem("isLogin", true);
-            if(result.data.data.hak_akses == "aktif"){
-              if (result.data.data.kategori === "Prodi") {
+            if(result.data.data[0].hak_akses == "aktif"){
+              if (result.data.data[0].kategori === "Prodi") {
                 this.$router.replace(this.$route.query.redirect || "/dashboard");
-              }else if (result.data.data.kategori === "Dosen") {
+              }else if (result.data.data[0].kategori === "Dosen") {
                 this.$router.replace(this.$route.query.redirect || "/dashboard/list_surat" );
               }
             }else{

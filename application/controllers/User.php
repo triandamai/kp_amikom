@@ -10,18 +10,24 @@ class User extends REST_Controller {
     //Fungsi Get untuk mengambil data
     public function index_get()
     {
-        //mengambil data dari database
+       //mngambil data post id
         $id = $this->get('id');
         $hak_akses = '';
+        //cek id kosong ? jika kosong ambil dengan where
         if($id == null || $id == ""){  
+            //ambil data
             $data = $this->db->get('tb_user');
+
+            //data di ulang untuk mengambil detail hak_akses
             foreach($data->result() as $key){
+                //ambil data hak akses
                 $this->db->where('id_user',$key->id);
                 $full_data = $this->db->get('tb_hak_akses');
                
+                //ambil satu data dan buat array baru
                 $row = $full_data->row();
                 if(isset($row)){
-                    
+                    //array baru untuk dikirim response
                     $data_auth[] = array(
                         'id' => $key->id,
                         'nama' => $key->nama,
@@ -37,12 +43,17 @@ class User extends REST_Controller {
                
             }
         }else{
+            //jika id tidak kosong ambil user kondisi id
             $this->db->where('id',$id);
             $data = $this->db->get('tb_user');
+            //ambil satu data
             $key = $data->row();
             if(isset($key)){
+                //ambil data hak akses
                 $this->db->where('id_user',$key->id);
                 $full_data = $this->db->get('tb_hak_akses')->row();
+
+                //buat ulang array untuk dikirim sebagai response
                 $data_auth[] = array(
                     'id' => $key->id,
                     'nama' => $key->nama,
@@ -54,6 +65,8 @@ class User extends REST_Controller {
                 );
             }
             }   
+
+            //response yang dikirim ke front end (json)
         $this->response([ 
             'success' => true,
             'message' => 'API',
@@ -63,12 +76,16 @@ class User extends REST_Controller {
     }
     public function index_post()
     {
+        //simpan data user baru
+        //tangkap data dari front end
         $id         = $this->post("id");
         $nama       = $this->post("nama");
         $nidn       = $this->post("nidn");
         $email      = $this->post("email");
         $password   = $this->post("password");
         $kategori   = $this->post("kategori");
+
+        //data dibuat jadi array
         $data = array(
             "nama"      => $nama,
             "nidn"      => $nidn,
@@ -76,23 +93,32 @@ class User extends REST_Controller {
             "password"  => md5($password),
             "kategori"  => $kategori
         );
+
+        //kemudian data disimpan
         $simpan = $this->db->insert("tb_user",$data);
+        //jika berhasil
         if($simpan){
+            //data diambil kembali untuk menyimpan ke tb_hak_akses
             $this->db->where($data);
             $getdata = $this->db->get("tb_user")->row();
 
             if(isset($getdata)){
+                //data yang akan disimpan ke hak_akses
                 $data_akses = array(
                     "id_user" => $getdata->id,
                     "status" => "aktif"
                 );
+                //proses simpan tb_hak_akses
                 $simpan_hak_akses = $this->db->insert("tb_hak_akses",$data_akses);
+
+                //jika berhasil
                 if($simpan_hak_akses){
                     $this->response([
                         'success' => false,
                         'message' => 'User berhasil disimpan tetapi gagal simpan ke hak akses',
                         'data'    => '404'
                     ], 200);
+                //jika gagal
                 }else{
                     $this->response([
                         'success' => true,

@@ -13,14 +13,20 @@ class Artikel extends REST_Controller {
 	//fungsi Get untuk mengambil data
 	public function index_get()
 	{
+		//get parameter kategori
 		$kategori = $this->get('kategori');
+		//get parameter id
 		$id = $this->get('id');
-
+		//get parameter buat search
 		$title = $this->get('query');
+
+		//jika query/search kosong mengambil data artiker
 		if($title == null || $title == ""){
-			//
+			//jika kategori kosong ambil semua artikel
 			if($kategori == null || $kategori == ""){
 				$data = $this->db->get('tb_post');
+
+				//mengambil sesuai kategori
 			}else {
 			//mengambil data dari database
 			$data = $this->db->where('kategori', $kategori);
@@ -34,6 +40,7 @@ class Artikel extends REST_Controller {
 				'data'    => $data->result()
 			], 200);
 		}else{
+			//ambil data artike untuk search
 			$this->db->like('title_post',$title);
 			$data = $this->db->get('tb_post');
 			$this->response([

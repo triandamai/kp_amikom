@@ -25,7 +25,7 @@
           </div>
           <div
             class="blog-wrapper__grid"
-            v-for="(item, index) in items"
+            v-for="(item, index) in items_chunk[pagination.index]"
             :key="item.id + '_' + index"
           >
             <img :src="'http://localhost/kp_amikom/uploads_artikel/'+item.gambar" alt />
@@ -56,13 +56,13 @@
           <div class="blog-wrapper__pagination">
             <ul>
               <li>
-                <button>Previos post</button>
+                <button :disabled="pagination.index == 0" @click="prevStep"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="arcs"><path d="M19 12H6M12 5l-7 7 7 7"/></svg> Previos post</button>
               </li>
               <li>
-                <div class="current_page">Page 1 of 5</div>
+                <div class="current_page">Page {{pagination.index+1}} of {{pagination.length}}</div>
               </li>
               <li>
-                <button>Next post</button>
+                <button :disabled="pagination.index == pagination.length-1" @click="nextStep">Next post <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="arcs"><path d="M5 12h13M12 5l7 7-7 7"/></svg></button>
               </li>
             </ul>
           </div>
@@ -86,10 +86,19 @@ export default {
     Footer
   },
   data: () => ({
-    items: []
+    items: [],
+    items_chunk : [],
+    pagination : {
+      index : 0,
+      length : 0,
+      show :0,
+    },
+    disablednext : false,
+    disabledprev : false
   }),
   mounted() {
     this.getArticle();
+   // this.splitData();
   },
   filters: {
     truncate: function(value, limit) {
@@ -100,16 +109,63 @@ export default {
     }
   },
   methods: {
+    splitData : function(array, size){
+    const chunked_arr = [];
+    for (let i = 0; i < array.length; i++) {
+      const last = chunked_arr[chunked_arr.length - 1];
+      if (!last || last.length === size) {
+        chunked_arr.push([array[i]]);
+      } else {
+        last.push(array[i]);
+      }
+    }
+    return chunked_arr;
+    },
+    nextStep : function(){
+    window.scrollTo({
+            top: document.body.offsetTop,
+            left: 0,
+            behavior: "smooth"
+    });
+    //    console.log(this.pagination.index+1)
+    if(this.pagination.index == this.pagination.length-1){
+     
+    }else{
+       return this.pagination.index++;
+    }
+  
+
+    },
+    prevStep : function(){
+      window.scrollTo({
+            top: document.body.offsetTop,
+            left: 0,
+            behavior: "smooth"
+     });
+       if(this.pagination.index == 0){
+        
+       } else{
+        return this.pagination.index--;
+      }
+      
+    
+    },
     getArticle: function() {
       this.axios
         .get("/artikel?kategori=Berita")
         .then(response => {
           this.items = response.data.data;
+         console.log( this.splitData(response.data.data,2));
+         this.items_chunk = this.splitData(response.data.data,2);
+         this.pagination.length = this.splitData(response.data.data,2).length;
         })
         .catch(err => {
           // console.log(err);
         });
+       
+     
     }
+
   },
   metaInfo: {
     title:
@@ -215,11 +271,23 @@ export default {
 
       li {
         button {
-          background-color: #ddd;
-          padding: 0.8em 1.25em;
+          background-color: #111;
+          color:$white;
+          padding: 0.5em 1.25em;
           -webkit-border-radius: 30px;
           -moz-border-radius: 30px;
           border-radius: 30px;
+
+          svg {
+            vertical-align:middle;
+          }
+
+          &:disabled {
+            background-color: #ddd;
+            color:$black;
+            cursor:not-allowed;
+            opacity:0.5;
+          }
         }
 
         .current_page {
